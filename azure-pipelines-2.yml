@@ -1,0 +1,39 @@
+# ASP.NET
+# Build and test ASP.NET projects.
+# Add steps that publish symbols, save build artifacts, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/apps/aspnet/build-aspnet-4
+
+trigger:
+- master
+stages:
+ - stage: Build
+   jobs:
+   - job: Build
+     steps:
+      - task: CopyFiles@2
+        inputs:
+          targetFolder: '$(Build.ArtifactStagingDirectory)'    
+      - task: PublishBuildArtifacts@1    
+        displayName: 'Publish Artifact: drop'
+        inputs:
+          PathtoPublish: '$(build.artifactstagingdirectory)'
+ - stage: Depploy
+   jobs:
+   - job: Deploy
+     steps:
+      - task: AzureRmWebAppDeployment@4
+        inputs:
+          ConnectionType: 'AzureRM'
+          azureSubscription: 'discoveryfast(1)(5f031b42-17f6-4733-a6c1-3a9874e18377)'
+          appType: 'webApp'
+          WebAppName: 'partspsd'
+          packageForLinux: '$(System.DefaultWorkingDirectory)/**/*.zip'
+pool:
+  vmImage: 'windows-latest'
+  steps:
+  - task: DownloadBuildArtifacts@1
+    inputs:
+      buildType: 'current'
+      downloadType: 'single'
+      artifactName: 'drop'
+      downloadPath: '$(System.ArtifactsDirectory)'
